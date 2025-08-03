@@ -1,0 +1,34 @@
+name: allerfree
+description: A Flutter app for allergen detection and food safety.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Configurație pentru SDK 35
+  image_picker: ^1.1.0
+  shared_preferences: ^2.2.2
+  image: ^4.0.15
+  audioplayers: ^5.0.0
+  path: ^1.8.3
+  path_provider: ^2.1.1
+  google_mlkit_text_recognition: ^0.15.0  # ADĂUGAT ÎNAPOI
+  mobile_scanner: ^3.5.6
+  http: ^1.1.0
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  # assets:
+  #   - assets/sounds/
