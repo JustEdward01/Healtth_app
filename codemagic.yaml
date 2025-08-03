@@ -1,0 +1,36 @@
+# codemagic.yaml
+# Salvează în root-ul proiectului Flutter
+
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          flutter test
+      - name: Build iOS
+        script: |
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      # Email notification
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
