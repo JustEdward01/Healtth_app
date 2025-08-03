@@ -1,0 +1,49 @@
+name: Build pentru Appetize.io
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios-appetize:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        channel: 'stable'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Install CocoaPods
+      run: cd ios && pod install --repo-update
+      
+    - name: Build iOS Simulator
+      run: flutter build ios --simulator --debug
+      
+    - name: Create ZIP pentru Appetize.io
+      run: |
+        cd build/ios/iphonesimulator
+        zip -r ../../../HealthApp-Appetize.zip Runner.app
+        echo "✅ ZIP pentru Appetize.io creat!"
+        
+    - name: Upload iOS ZIP
+      uses: actions/upload-artifact@v4
+      with:
+        name: appetize-ios-build
+        path: HealthApp-Appetize.zip
+        
+    - name: Build Android APK (bonus)
+      run: flutter build apk --release
+      
+    - name: Upload Android APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
