@@ -1,0 +1,51 @@
+# codemagic.yaml - Versiune simplificată pentru testare
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          flutter packages pub get
+          
+      - name: Install pods
+        script: |
+          cd ios && pod install --repo-update
+          
+      - name: Build iOS app
+        script: |
+          flutter build ios --release --no-codesign
+          
+      - name: Create IPA without signing
+        script: |
+          # Creează directorul pentru IPA
+          mkdir -p build/ios/ipa
+          
+          # Navighează la directorul cu .app
+          cd build/ios/iphoneos
+          
+          # Creează structura Payload pentru IPA
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          
+          # Creează IPA-ul
+          zip -r ../ipa/healthapp-unsigned.ipa Payload/
+          
+          echo "✅ IPA creat cu succes: build/ios/ipa/healthapp-unsigned.ipa"
+          
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/iphoneos/*.app
+      - /tmp/xcodebuild_logs/*.log
+      
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
