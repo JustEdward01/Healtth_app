@@ -1351,7 +1351,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
+                    color: color.withValues(alpha:0.3),
                     blurRadius: showSuccessAnimation ? 20 : 10,
                     spreadRadius: showSuccessAnimation ? 5 : 2,
                   ),
@@ -1378,7 +1378,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.green.withOpacity(0.5),
+                                color: Colors.green.withValues(alpha:0.5),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -1397,7 +1397,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen>
                   if (isProcessing && !showSuccessAnimation)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha:0.7),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Center(
@@ -1479,7 +1479,7 @@ class ScannerOverlayPainter extends CustomPainter {
       ..shader = LinearGradient(
         colors: [
           Colors.transparent,
-          const Color(0xFF6B9B76).withOpacity(0.8),
+          const Color(0xFF6B9B76).withValues(alpha:0.8),
           Colors.transparent,
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, 4));

@@ -290,20 +290,7 @@ class OcrService {
   }
 
   /// Calculează confidence score bazat pe rezultatele OCR (din versiunea originală)
-  double _calculateConfidence(RecognizedText recognizedText) {
-    if (recognizedText.text.isEmpty) return 0.0;
-
-    double confidence = 0.0;
-    int totalBlocks = recognizedText.blocks.length;
-
-    if (totalBlocks == 0) return 0.0;
-
-    // Bazat pe numărul de blocuri și lungimea textului
-    confidence += (totalBlocks * 0.1).clamp(0.0, 0.5);
-    confidence += (recognizedText.text.length / 100).clamp(0.0, 0.5);
-
-    return confidence.clamp(0.0, 1.0);
-  }
+ 
 
   /// Extrage ingrediente pentru limba specificată
   String _extractIngredientsForLanguage(String text, String language) {

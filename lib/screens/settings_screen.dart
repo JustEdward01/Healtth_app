@@ -21,27 +21,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _updatePreferences(UserPreferences newPreferences) async {
-    try {
-      await _userService.updatePreferences(newPreferences);
-      setState(() {
-        preferences = newPreferences;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Setările au fost actualizate!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Eroare: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  try {
+    await _userService.updatePreferences(newPreferences);
+    if (!mounted) return;
+    setState(() {
+      preferences = newPreferences;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Setările au fost actualizate!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Eroare: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -292,7 +294,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black..withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -350,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -489,21 +491,7 @@ String _getThemeDisplay(String theme) {
   );
 }
 
-  Widget _buildThemeOption(String code, String name, String description) {
-    return RadioListTile<String>(
-      title: Text(name),
-      subtitle: Text(description),
-      value: code,
-      groupValue: preferences!.theme,
-      onChanged: (value) {
-        if (value != null) {
-          _updatePreferences(preferences!.copyWith(theme: value));
-          Navigator.of(context).pop();
-        }
-      },
-      activeColor: const Color(0xFF6B9B76),
-    );
-  }
+  
 
   void _showPrivacyPolicy() {
     showDialog(

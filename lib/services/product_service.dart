@@ -166,14 +166,7 @@ class ProductService {
         '';
   }
 
-  List<String> _extractCategories(Map<String, dynamic> productData) {
-    if (productData['categories_tags'] != null) {
-      return List<String>.from(productData['categories_tags'])
-          .map((tag) => tag.replaceAll('en:', '').replaceAll('-', ' '))
-          .toList();
-    }
-    return [];
-  }
+ 
 
   /// Salvează produs în favorite (local storage)
   Future<void> saveToFavorites(Product product) async {

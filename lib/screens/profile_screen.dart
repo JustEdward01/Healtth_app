@@ -15,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
-  final ResultHandler _resultHandler = ResultHandler();
   final ImageSelector _imageSelector = ImageSelector();
 
   UserProfile? get currentUser => _userService.currentUser;
@@ -53,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: const Color(0xFF6B9B76).withOpacity(0.1),
+                        backgroundColor: const Color(0xFF6B9B76).withValues(alpha:0.1),
                         backgroundImage: currentUser!.hasAvatar
                             ? FileImage(File(currentUser!.avatarPath!))
                             : null,
@@ -121,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha:0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -174,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha:0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -220,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6B9B76).withOpacity(0.1),
+                            color: const Color(0xFF6B9B76).withValues(alpha:0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: const Color(0xFF6B9B76),
@@ -320,7 +319,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(25),
           ),
           child: Icon(
@@ -367,7 +366,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha:0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -380,8 +379,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 48,
               decoration: BoxDecoration(
                 color: isDestructive 
-                    ? Colors.red.withOpacity(0.1)
-                    : const Color(0xFF6B9B76).withOpacity(0.1),
+                    ? Colors.red.withValues(alpha:0.1)
+                    : const Color(0xFF6B9B76).withValues(alpha:0.1),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Icon(
@@ -425,92 +424,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _changeAvatar() async {
-    try {
-      final File? image = await _imageSelector.pickFromGallery();
-      if (image != null) {
-        await _userService.updateAvatar(image.path);
-        setState(() {});
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Avatar actualizat cu succes!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
+  try {
+    final File? image = await _imageSelector.pickFromGallery();
+    if (image != null) {
+      await _userService.updateAvatar(image.path);
+      if (!mounted) return; // <-- Add this line
+      setState(() {});
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Eroare la actualizarea avatar-ului: $e'),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text('Avatar actualizat cu succes!'),
+          backgroundColor: Colors.green,
         ),
       );
     }
-  }
-
-  void _editAllergens() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return _AllergenEditDialog(
-          currentAllergens: currentUser!.selectedAllergens,
-          onSave: (selectedAllergens) async {
-            try {
-              await _userService.updateProfile(selectedAllergens: selectedAllergens);
-              setState(() {});
-              Navigator.of(context).pop();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Alergenii au fost actualizați!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Eroare: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-        );
-      },
+  } catch (e) {
+    if (!mounted) return; // <-- Add this line
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Eroare la actualizarea avatar-ului: $e'),
+        backgroundColor: Colors.red,
+      ),
     );
   }
+}
+
+void _editAllergens() {
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) { // Use dialogContext for the dialog
+      return _AllergenEditDialog(
+        currentAllergens: currentUser!.selectedAllergens,
+        onSave: (selectedAllergens) async {
+          try {
+            await _userService.updateProfile(selectedAllergens: selectedAllergens);
+            if (!dialogContext.mounted) return; // Use dialogContext here
+            setState(() {});
+            Navigator.of(dialogContext).pop();
+
+            ScaffoldMessenger.of(dialogContext).showSnackBar(
+              const SnackBar(
+                content: Text('Alergenii au fost actualizați!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } catch (e) {
+            if (!dialogContext.mounted) return; // Use dialogContext here
+            ScaffoldMessenger.of(dialogContext).showSnackBar(
+              SnackBar(
+                content: Text('Eroare: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      );
+    },
+  );
+}
 
   void _editProfile() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return _ProfileEditDialog(
-          currentUser: currentUser!,
-          onSave: (name, email) async {
-            try {
-              await _userService.updateProfile(name: name, email: email);
-              setState(() {});
-              Navigator.of(context).pop();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profilul a fost actualizat!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Eroare: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return _ProfileEditDialog(
+        currentUser: currentUser!,
+        onSave: (name, email) async {
+          try {
+            await _userService.updateProfile(name: name, email: email);
+            if (!dialogContext.mounted) return;
+            setState(() {});
+            Navigator.of(dialogContext).pop();
+
+            ScaffoldMessenger.of(dialogContext).showSnackBar(
+              const SnackBar(
+                content: Text('Profilul a fost actualizat!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } catch (e) {
+            if (!dialogContext.mounted) return;
+            ScaffoldMessenger.of(dialogContext).showSnackBar(
+              SnackBar(
+                content: Text('Eroare: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      );
+    },
+  );
+}
 
   void _showAbout() {
     showDialog(
@@ -541,46 +546,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _resetApp() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Resetează Aplicația'),
-          content: const Text(
-            'Această acțiune va șterge toate datele tale (profil, setări, istoric). '
-            'Vei fi redirectat la ecranul de onboarding.\n\n'
-            'Ești sigur că vrei să continui?',
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: const Text('Resetează Aplicația'),
+        content: const Text(
+          'Această acțiune va șterge toate datele tale (profil, setări, istoric). '
+          'Vei fi redirectat la ecranul de onboarding.\n\n'
+          'Ești sigur că vrei să continui?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Anulează'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Anulează'),
-            ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  await _userService.clearUserData();
-                  if (context.mounted) {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                    // Restart app - în producție ar trebui să redirectezi la SplashScreen
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Eroare: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Resetează'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+          TextButton(
+            onPressed: () async {
+              try {
+                await _userService.clearUserData();
+                if (!dialogContext.mounted) return;
+                Navigator.of(dialogContext).popUntil((route) => route.isFirst);
+                // Restart app - în producție ar trebui să redirectezi la SplashScreen
+              } catch (e) {
+                if (!dialogContext.mounted) return;
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(
+                    content: Text('Eroare: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Resetează'),
+          ),
+        ],
+      );
+    },
+  );
+}
 }
 
 // Dialog pentru editarea alergenilor

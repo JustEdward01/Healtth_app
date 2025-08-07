@@ -158,14 +158,14 @@ class AppThemes {
       foregroundColor: Colors.white,
       elevation: 0,
     ),
-    cardTheme: CardTheme(
-      color: const Color(0xFFd9ead3), // Verde pal
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
+    cardTheme: CardThemeData(
+  color: const Color(0xFFd9ead3), // Verde pal
+  elevation: 2,
+  shadowColor: Colors.black.withValues(alpha: 0.1),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF5a7d5a), // Buton scanare
@@ -184,9 +184,9 @@ class AppThemes {
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF4caf50).withOpacity(0.5);
+          return const Color(0xFF4caf50).withValues(alpha:0.5);
         }
-        return Colors.grey.withOpacity(0.3);
+        return Colors.grey.withValues(alpha:0.3);
       }),
     ),
     textTheme: const TextTheme(
@@ -214,14 +214,14 @@ class AppThemes {
       foregroundColor: Color(0xFFe8f5e9), // Text alb-verzui
       elevation: 0,
     ),
-    cardTheme: CardTheme(
-      color: const Color(0xFF1e2b25), // Verde-oliv foarte închis
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
+    cardTheme: CardThemeData(
+  color: const Color(0xFF1e2b25), // Verde-oliv foarte închis
+  elevation: 4,
+  shadowColor: Colors.black.withValues(alpha: 0.5),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFFa5d6a7), // Verde pastel luminos
@@ -240,9 +240,9 @@ class AppThemes {
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const Color(0xFF81c784).withOpacity(0.5);
+          return const Color(0xFF81c784).withValues(alpha:0.5);
         }
-        return const Color(0xFFa0b8a5).withOpacity(0.3);
+        return const Color(0xFFa0b8a5).withValues(alpha:0.3);
       }),
     ),
     textTheme: const TextTheme(

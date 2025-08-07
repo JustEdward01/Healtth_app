@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../../providers/allergen_provider.dart';
-import '../screens/allergen_scanner_screen.dart';
 import '../../screens/camera/smart_camera_screen.dart';
 
 class AllergenScannerScreen extends StatefulWidget {

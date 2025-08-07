@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../services/user_service.dart';
 import '../modules/image_selector.dart';
-import '../modules/image_processor.dart';
 import '../modules/ocr_service.dart';
 import '../modules/result_handler.dart';
 import 'profile_screen.dart';
@@ -10,7 +9,6 @@ import 'barcode_scanner_screen.dart';
 import '../widgets/quick_settings_widgets.dart';
 import '../services/enhanced_image_processor.dart';
 import '../services/quality_aware_ocr_service.dart';
-import 'package:allerfree/screens/camera/smart_camera_screen.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -24,7 +22,6 @@ class _MainScreenState extends State<MainScreen> {
   // Services
   final UserService _userService = UserService();
   final ImageSelector _imageSelector = ImageSelector();
-  final ImageProcessor _imageProcessor = ImageProcessor();
   final OcrService _ocrService = OcrService();
   final ResultHandler _resultHandler = ResultHandler();
   
@@ -157,7 +154,7 @@ Widget _buildBarcodeAction() {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha:0.5),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -437,7 +434,7 @@ Widget _buildQuickAction({
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

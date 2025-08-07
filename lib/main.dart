@@ -1,3 +1,4 @@
+// lib/main.dart - FIXED VERSION
 import 'package:flutter/material.dart';
 import 'services/user_service.dart';
 import 'screens/onboarding_screen.dart';
@@ -6,22 +7,17 @@ import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/settings_screen.dart';
 import 'providers/allergen_provider.dart';
-// ❌ ELIMINAT: import 'services/hybrid_detection_service.dart';
 import 'allergen/screens/allergen_scanner_screen.dart';
-import '../screens/camera/smart_camera_screen.dart';
-import 'screens/camera/smart_camera_screen.dart';
+import 'screens/camera/smart_camera_screen.dart'; // ✅ FIXED: doar acest import
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // ❌ ELIMINAT: HybridDetectionService().initialize();
-  // Dictionary-based service nu necesită inițializare specială
   
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        ChangeNotifierProvider(create: (context) => AllergenProvider()), // ✅ Updated pentru Dictionary
+        ChangeNotifierProvider(create: (context) => AllergenProvider()),
       ],
       child: const AllerFreeApp(),
     ),
@@ -43,10 +39,10 @@ class AllerFreeApp extends StatelessWidget {
           home: const SplashScreen(),
           debugShowCheckedModeBanner: false,
           routes: {
-  '/settings': (context) => const SettingsScreen(),
-  '/allergen-scanner': (context) => const AllergenScannerScreen(),
-  '/smart-camera': (context) => const SmartCameraScreen(), // <-- Add this line
-},
+            '/settings': (context) => const SettingsScreen(),
+            '/allergen-scanner': (context) => const AllergenScannerScreen(),
+            '/smart-camera': (context) => const SmartCameraScreen(),
+          },
         );
       },
     );
@@ -70,35 +66,30 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkOnboardingStatus() async {
-    // ✅ Splash screen mai rapid fără BERT loading
-    await Future.delayed(const Duration(seconds: 1)); // Reduced from 2 seconds
-    
-    try {
-      final hasCompletedOnboarding = await _userService.hasCompletedOnboarding();
-      
-      if (mounted) {
-        if (hasCompletedOnboarding) {
-          // Încarcă profilul utilizatorului
-          await _userService.loadUserProfile();
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Eroare la verificarea onboarding-ului: $e');
-      // În caz de eroare, mergi la onboarding
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-        );
-      }
+  await Future.delayed(const Duration(seconds: 1));
+  
+  try {
+    final hasCompletedOnboarding = await _userService.hasCompletedOnboarding();
+    if (!mounted) return;
+    if (hasCompletedOnboarding) {
+      await _userService.loadUserProfile();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+      );
     }
+  } catch (e) {
+    debugPrint('Eroare la verificarea onboarding-ului: $e');
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -140,12 +131,10 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 48),
-            // ✅ Loading indicator pentru UI consistency
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
             const SizedBox(height: 16),
-            // 🆕 Mesaj updated pentru Dictionary approach
             const Text(
               'Inițializare detectare alergeni...',
               style: TextStyle(
@@ -161,7 +150,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-// 🆕 Class pentru tema aplicației (dacă nu există deja)
 class AppThemes {
   static ThemeData get lightTheme {
     return ThemeData(

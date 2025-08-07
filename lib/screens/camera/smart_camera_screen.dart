@@ -17,7 +17,7 @@ class _SmartCameraScreenState extends State<SmartCameraScreen> {
   final _cameraService = SmartCameraService();
   
   IngredientZone? _currentZone;
-  PhotoQuality _currentQuality = PhotoQuality.SEARCHING;
+  PhotoQuality _currentQuality = PhotoQuality.searching;
   bool _isCapturing = false;
 
   @override
@@ -140,14 +140,14 @@ class _SmartCameraScreenState extends State<SmartCameraScreen> {
             right: 0,
             child: Center(
               child: GestureDetector(
-                onTap: _currentQuality != PhotoQuality.TERRIBLE && !_isCapturing
+                onTap: _currentQuality != PhotoQuality.terrible && !_isCapturing
                     ? _capturePhoto
                     : null,
                 child: Container(
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: _currentQuality == PhotoQuality.TERRIBLE 
+                    color: _currentQuality == PhotoQuality.terrible 
                         ? Colors.grey 
                         : _currentQuality.color,
                     borderRadius: BorderRadius.circular(40),

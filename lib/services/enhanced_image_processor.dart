@@ -241,9 +241,7 @@ class EnhancedImageProcessor {
   }
 
   /// Detectează și procesează fundalul colorat
-  img.Image _processColoredBackground(img.Image image) {
-    return img.grayscale(image);
-  }
+ 
 
   /// Creează multiple variante ale imaginii pentru OCR
   Future<List<File>> createMultipleVariants(File originalImage) async {

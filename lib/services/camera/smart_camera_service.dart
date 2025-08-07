@@ -189,14 +189,14 @@ class SmartCameraService {
   }
 
   PhotoQuality assessPhotoQuality(IngredientZone zone) {
-    if (!zone.isDetected) return PhotoQuality.SEARCHING;
+    if (!zone.isDetected) return PhotoQuality.searching;
     
     final confidence = zone.confidence;
     
-    if (confidence >= 0.8) return PhotoQuality.PERFECT;
-    if (confidence >= 0.6) return PhotoQuality.GOOD;
-    if (confidence >= 0.3) return PhotoQuality.POOR;
-    return PhotoQuality.TERRIBLE;
+    if (confidence >= 0.8) return PhotoQuality.perfect;
+    if (confidence >= 0.6) return PhotoQuality.good;
+    if (confidence >= 0.3) return PhotoQuality.poor;
+    return PhotoQuality.terrible;
   }
 
   void dispose() {

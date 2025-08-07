@@ -4,7 +4,19 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 class QualityAwareOcrService {
   late final TextRecognizer _textRecognizer;
   bool _isInitialized = false;
-
+  static String normalize(String input) {
+  return input
+      .toLowerCase()
+      .replaceAll(RegExp(r'[ăâ]'), 'a')
+      .replaceAll(RegExp(r'[îï]'), 'i')
+      .replaceAll(RegExp(r'[șş]'), 's')
+      .replaceAll(RegExp(r'[țţ]'), 't')
+      .replaceAll(RegExp(r'[éèêë]'), 'e')
+      .replaceAll(RegExp(r'[ôö]'), 'o')
+      .replaceAll(RegExp(r'[ûü]'), 'u')
+      .replaceAll(RegExp(r'[œ]'), 'oe')
+      .replaceAll(RegExp(r'[ç]'), 'c');
+}
   Future<void> initialize() async {
     if (!_isInitialized) {
       _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
@@ -181,11 +193,11 @@ class QualityAwareOcrService {
   bool _hasIngredientKeywords(String text) {
     final lowerText = text.toLowerCase();
     final ingredientKeywords = [
-      'ingredient', 'conține', 'lapte', 'gluten', 'ouă', 'soia', 'nuci',
-      'ingredients', 'contains', 'milk', 'eggs', 'soy', 'nuts', 'wheat',
-      'zutaten', 'enthält', 'milch', 'eier', 'soja', 'nüsse',
-      'ingrédients', 'contient', 'lait', 'œufs', 'soja', 'noix',
-    ];
+  'ingredient', 'ingrediente', 'conține', 'contine', 'lapte', 'gluten', 'ouă', 'oua', 'soia', 'nuci',
+  'ingredients', 'contains', 'milk', 'eggs', 'soy', 'nuts', 'wheat',
+  'zutaten', 'enthält', 'milch', 'eier', 'soja', 'nüsse',
+  'ingrédients', 'contient', 'lait', 'œufs', 'soja', 'noix',
+];
     
     return ingredientKeywords.any((keyword) => lowerText.contains(keyword));
   }
@@ -196,9 +208,10 @@ class QualityAwareOcrService {
     
     // Penalizează linii foarte scurte
     if (lineText.length < 3) {
-      confidence *= 0.3;
-    } else if (lineText.length < 6) confidence *= 0.6;
-    
+  confidence *= 0.3;
+} else if (lineText.length < 6) {
+  confidence *= 0.6;
+}
     // Penalizează caractere ciudate
     final weirdCharCount = _countWeirdCharacters(lineText);
     final weirdRatio = weirdCharCount / lineText.length;
