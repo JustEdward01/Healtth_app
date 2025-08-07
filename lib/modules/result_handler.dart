@@ -1,3 +1,6 @@
+// result_handler.dart
+
+
 /// Model pentru rezultatul detectării alergenilor
 class AllergenMatch {
   final String allergen;
@@ -14,81 +17,55 @@ class AllergenMatch {
 }
 
 class ResultHandler {
-  // Lista completă a celor 14 alergeni majori conform UE
-  static const Map<String, List<String>> allergenVariants = {
+  // Lista completă a celor 14 alergeni majori conform UE, cu regex-uri pre-compilate
+  static final Map<String, List<RegExp>> allergenVariants = {
     'lapte': [
-      'lapte', 'milk', 'latte', 'leche', 'lait',
-      'lactoza', 'lactose', 'zer', 'whey', 'cazeina', 'casein',
-      'smântână', 'cream', 'brânză', 'cheese', 'iaurt', 'yogurt',
-      'unt', 'butter', 'margarina'
+      RegExp(r'\b(lapte|lactoză|zer|cazeină|lactalbumin|smântână|brânză|iaurt|unt|margarină)\b', caseSensitive: false),
+      RegExp(r'\b(milk|lactose|whey|casein|caseinate|cream|cheese|yogurt|butter)\b', caseSensitive: false),
     ],
     'ouă': [
-      'ouă', 'eggs', 'egg', 'oua', 'ou',
-      'albumen', 'gălbenuş', 'yolk', 'lecitina', 'lecithin',
-      'ovomucoida', 'ovomucoid'
+      RegExp(r'\b(ouă|galbenuș|albuș|ovomucoida)\b', caseSensitive: false),
+      RegExp(r'\b(eggs?|albumen|yolk|ovomucoid)\b', caseSensitive: false),
     ],
     'pește': [
-      'pește', 'fish', 'peste', 'pesce',
-      'ton', 'tuna', 'somon', 'salmon', 'cod', 'bacalau',
-      'sardine', 'macrou', 'hering', 'anchoa'
+      RegExp(r'\b(pește|ton|somon|cod|sardine|macrou|hering|anchoa)\b', caseSensitive: false),
+      RegExp(r'\b(fish|tuna|salmon|cod|sardines|mackerel|herring)\b', caseSensitive: false),
     ],
     'crustacee': [
-      'crustacee', 'crustaceans', 'crab', 'lobster',
-      'creveti', 'shrimp', 'prawns', 'langusta',
-      'homard', 'gamberi'
+      RegExp(r'\b(crustacee|creveți|homar|langustă|crab)\b', caseSensitive: false),
+      RegExp(r'\b(crustaceans?|shrimp|prawns?|lobster)\b', caseSensitive: false),
     ],
     'moluște': [
-      'moluște', 'molluscs', 'scoici', 'mussels',
-      'stridii', 'oysters', 'caracatita', 'octopus',
-      'calamari', 'squid'
+      RegExp(r'\b(moluște|scoici|stridii|caracatiță|calamari)\b', caseSensitive: false),
+      RegExp(r'\b(molluscs?|mussels?|oysters?|octopus|squid)\b', caseSensitive: false),
     ],
     'nuci': [
-      'nuci', 'nuts', 'migdale', 'almonds', 'almond',
-      'castane', 'chestnuts', 'fistic', 'pistachios', 'pistachio',
-      'alune', 'hazelnuts', 'hazelnut', 'pecan',
-      'nuci braziliene', 'brazil nuts', 'nuci macadamia', 'macadamia'
+      RegExp(r'\b(nuci|migdale|alune|castane|fistic|pecan|macadamia)\b', caseSensitive: false),
+      RegExp(r'\b(nuts?|almonds?|hazelnuts?|chestnuts?|pistachios?|brazil\snuts?|macadamia)\b', caseSensitive: false),
     ],
     'arahide': [
-      'arahide', 'peanuts', 'peanut', 'groundnuts',
-      'cacahuete', 'amendoim'
+      RegExp(r'\b(arahide|cacahuete)\b', caseSensitive: false),
+      RegExp(r'\b(peanuts?|groundnuts?)\b', caseSensitive: false),
     ],
     'soia': [
-      'soia', 'soy', 'soja', 'tofu',
-      'lecitina de soia', 'soy lecithin',
-      'proteine de soia', 'soy protein'
+      RegExp(r'\b(soia|tofu|lecitină\sde\ssoia|proteină\sde\ssoia)\b', caseSensitive: false),
+      RegExp(r'\b(soy|soybeans?|tofu|soy\slecithin|soy\sprotein)\b', caseSensitive: false),
     ],
     'grâu': [
-      'grâu', 'wheat', 'faina', 'flour',
-      'gluten', 'amidon', 'starch',
-      'bulgur', 'couscous', 'seitan'
+      RegExp(r'\b(grâu|faină|gluten|amidon|bulgur|couscous|seitan)\b', caseSensitive: false),
+      RegExp(r'\b(wheat|flour|gluten|starch|bulgur|couscous)\b', caseSensitive: false),
     ],
-    'secară': [
-      'secară', 'rye', 'centeno'
-    ],
-    'orz': [
-      'orz', 'barley', 'malt', 'malta',
-      'extract de malt', 'malt extract'
-    ],
-    'ovăz': [
-      'ovăz', 'oats', 'avena', 'avoine'
-    ],
-    'susan': [
-      'susan', 'sesame', 'tahini', 'sesamo',
-      'ulei de susan', 'sesame oil'
-    ],
-    'țelină': [
-      'țelină', 'celery', 'apio', 'celeri'
-    ],
-    'muștar': [
-      'muștar', 'mustard', 'mostarda', 'moutarde'
-    ],
-    'lupin': [
-      'lupin', 'lupine', 'lupini'
-    ],
+    'secară': [RegExp(r'\b(secară|rye|centeno)\b', caseSensitive: false)],
+    'orz': [RegExp(r'\b(orz|barley|malt|malta)\b', caseSensitive: false)],
+    'ovăz': [RegExp(r'\b(ovăz|oats?|avena|avoine)\b', caseSensitive: false)],
+    'susan': [RegExp(r'\b(susan|tahini|sesamo|ulei\sde\ssusan)\b', caseSensitive: false)],
+    'țelină': [RegExp(r'\b(țelină|celery|apio|celeri)\b', caseSensitive: false)],
+    'muștar': [RegExp(r'\b(muștar|mustard|mostarda|moutarde)\b', caseSensitive: false)],
+    'lupin': [RegExp(r'\b(lupin|lupine|lupini)\b', caseSensitive: false)],
     'dioxid de sulf': [
-      'dioxid de sulf', 'sulfur dioxide', 'sulphur dioxide',
-      'sulfiti', 'sulfites', 'e220', 'e221', 'e222', 'e223', 'e224', 'e225', 'e226', 'e227', 'e228'
-    ]
+      RegExp(r'\b(dioxid\sde\ssulf|sulfit|E-?22[0-8])\b', caseSensitive: false),
+      RegExp(r'\b(sulfur\sdioxide|sulphites?|E-?22[0-8])\b', caseSensitive: false),
+    ],
   };
 
   /// Detectează alergeni cu compatibilitate cu versiunea ta originală
@@ -101,25 +78,26 @@ class ResultHandler {
   List<AllergenMatch> findAllergensDetailed(String text) {
     final List<AllergenMatch> matches = [];
     final lowerText = text.toLowerCase();
-    
-    // Curăță textul de caractere speciale pentru căutare mai precisă
-    final cleanedText = _cleanTextForSearch(lowerText);
-    
+
+    // Verifică dacă textul conține cuvinte cheie pentru ingrediente
+    final hasIngredientContext = _hasIngredientList(lowerText);
+
     for (final entry in allergenVariants.entries) {
       final allergen = entry.key;
       final variants = entry.value;
-      
-      for (final variant in variants) {
-        final foundPositions = _findAllOccurrences(cleanedText, variant.toLowerCase());
-        
-        for (final position in foundPositions) {
-          final confidence = _calculateConfidence(cleanedText, variant.toLowerCase(), position);
-          
-          // Adaugă doar dacă confidence > 0.3 pentru a evita false positive
-          if (confidence > 0.3) {
+
+      for (final regex in variants) {
+        for (final match in regex.allMatches(lowerText)) {
+          final foundTerm = match.group(0)!;
+          final position = match.start;
+
+          final confidence = _calculateConfidence(lowerText, foundTerm, position, hasIngredientContext);
+
+          // Adaugă doar dacă confidence > 0.4, un prag mai mare pentru precizie
+          if (confidence > 0.4) {
             matches.add(AllergenMatch(
               allergen: allergen,
-              foundTerm: variant,
+              foundTerm: foundTerm,
               confidence: confidence,
               position: position,
             ));
@@ -127,114 +105,49 @@ class ResultHandler {
         }
       }
     }
-    
+
     // Sortează după confidence și elimină duplicatele
     matches.sort((a, b) => b.confidence.compareTo(a.confidence));
     return _removeDuplicates(matches);
   }
 
   /// Verifică dacă textul pare să conțină o listă de ingrediente
-  bool hasIngredientList(String text) {
-    final lowerText = text.toLowerCase();
-    return lowerText.contains(RegExp(r'ingredient|składniki|ingrediente|composition'));
-  }
-
-  /// Obține statistici despre detectarea alergenilor
-  Map<String, dynamic> getDetectionStats(String text) {
-    final matches = findAllergensDetailed(text);
-    final uniqueAllergens = matches.map((m) => m.allergen).toSet();
-    
-    return {
-      'totalMatches': matches.length,
-      'uniqueAllergens': uniqueAllergens.length,
-      'allergensList': uniqueAllergens.toList(),
-      'averageConfidence': matches.isEmpty 
-          ? 0.0 
-          : matches.map((m) => m.confidence).reduce((a, b) => a + b) / matches.length,
-      'hasIngredients': hasIngredientList(text),
-      'textLength': text.length,
-    };
-  }
-
-  /// Curăță textul pentru căutare mai precisă
-  String _cleanTextForSearch(String text) {
-    return text
-        .replaceAll(RegExp(r'[^\w\s]'), ' ') // Înlocuiește punctuația cu spații
-        .replaceAll(RegExp(r'\s+'), ' ')     // Înlocuiește spații multiple
-        .trim();
-  }
-
-  /// Găsește toate aparițiile unui termen în text
-  List<int> _findAllOccurrences(String text, String term) {
-    final List<int> occurrences = [];
-    int index = text.indexOf(term);
-    
-    while (index != -1) {
-      // Verifică dacă e cuvânt întreg (nu parte din alt cuvânt)
-      bool isWholeWord = true;
-      
-      if (index > 0 && RegExp(r'\w').hasMatch(text[index - 1])) {
-        isWholeWord = false;
-      }
-      
-      if (index + term.length < text.length && 
-          RegExp(r'\w').hasMatch(text[index + term.length])) {
-        isWholeWord = false;
-      }
-      
-      if (isWholeWord) {
-        occurrences.add(index);
-      }
-      
-      index = text.indexOf(term, index + 1);
-    }
-    
-    return occurrences;
+  bool _hasIngredientList(String text) {
+    return text.contains(RegExp(r'ingredien|składniki|compoziție|ingredients|zusammensetzung', caseSensitive: false));
   }
 
   /// Calculează confidence score pentru o potrivire
-  double _calculateConfidence(String text, String term, int position) {
+  double _calculateConfidence(String text, String term, int position, bool hasIngredientContext) {
     double confidence = 0.5; // Base confidence
-    
+
     // Boost dacă e în context de ingrediente
-    final contextBefore = text.substring(
-      (position - 50).clamp(0, text.length), 
-      position
-    );
-    final contextAfter = text.substring(
-      position, 
-      (position + 50).clamp(0, text.length)
-    );
-    
-    if (contextBefore.contains(RegExp(r'ingredient|składniki')) ||
-        contextAfter.contains(RegExp(r'ingredient|składniki'))) {
+    if (hasIngredientContext) {
       confidence += 0.3;
     }
-    
+
     // Boost pentru termeni mai specifici
-    if (term.length > 4) {
+    if (term.length > 5) {
       confidence += 0.1;
     }
-    
-    // Penalizare pentru termeni foarte comuni care pot fi false positive
-    if (['ou', 'unt', 'lapte'].contains(term) && term.length < 4) {
-      confidence -= 0.1;
+
+    // Penalizare pentru termeni foarte scurți și comuni, dacă nu sunt în context de ingrediente
+    if (term.length < 4 && !hasIngredientContext) {
+      confidence -= 0.3;
     }
-    
+
     return confidence.clamp(0.0, 1.0);
   }
 
   /// Elimină duplicatele (același alergen detectat de mai multe ori)
   List<AllergenMatch> _removeDuplicates(List<AllergenMatch> matches) {
     final Map<String, AllergenMatch> uniqueMatches = {};
-    
+
     for (final match in matches) {
-      if (!uniqueMatches.containsKey(match.allergen) ||
-          uniqueMatches[match.allergen]!.confidence < match.confidence) {
+      if (!uniqueMatches.containsKey(match.allergen)) {
         uniqueMatches[match.allergen] = match;
       }
     }
-    
+
     return uniqueMatches.values.toList();
   }
 

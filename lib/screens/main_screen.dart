@@ -7,7 +7,10 @@ import '../modules/ocr_service.dart';
 import '../modules/result_handler.dart';
 import 'profile_screen.dart';
 import 'barcode_scanner_screen.dart';
-
+import '../widgets/quick_settings_widgets.dart';
+import '../services/enhanced_image_processor.dart';
+import '../services/quality_aware_ocr_service.dart';
+import 'package:allerfree/screens/camera/smart_camera_screen.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -150,7 +153,7 @@ Widget _buildBarcodeAction() {
                 margin: const EdgeInsets.symmetric(vertical: 24),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -162,14 +165,19 @@ Widget _buildBarcodeAction() {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber, color: Color(0xFF6B9B76)),
+                    Icon(Icons.warning_amber, color: Theme.of(context).brightness == Brightness.dark 
+    ? const Color(0xFF81c784) 
+    : const Color(0xFF5a7d5a)),
                     const SizedBox(width: 12),
                     Text(
                       'Monitorizezi ${_userService.currentUser!.allergenCount} ${_userService.currentUser!.allergenCount == 1 ? 'alergen' : 'alergeni'}',
-                      style: const TextStyle(
+                      style:  TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D5A3D),
+                        color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF81c784)
+                        : const Color(0xFF5a7d5a)
+                        ,
                       ),
                     ),
                   ],
@@ -215,25 +223,29 @@ Widget _buildBarcodeAction() {
                             Icons.camera_alt,
                             color: Color(0xFF2D5A3D),
                           ),
-                          label: const Text(
-                            'Scanează Produsul',
-                            style: TextStyle(
-                              color: Color(0xFF2D5A3D),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            elevation: 0,
-                          ),
+                          label: Text(
+ 'Scanează Produsul',
+ style: TextStyle(
+   color: Theme.of(context).brightness == Brightness.dark 
+       ? const Color(0xFF121b16) 
+       : const Color(0xFF2D5A3D),
+   fontSize: 16,
+   fontWeight: FontWeight.w600,
+ ),
+),
+style: ElevatedButton.styleFrom(
+ backgroundColor: Theme.of(context).brightness == Brightness.dark 
+     ? const Color(0xFFa5d6a7) 
+     : Colors.white,
+ padding: const EdgeInsets.symmetric(
+   horizontal: 24,
+   vertical: 12,
+ ),
+ shape: RoundedRectangleBorder(
+   borderRadius: BorderRadius.circular(25),
+ ),
+ elevation: 0,
+),
                         ),
                       ],
                     )
@@ -351,90 +363,107 @@ Widget _buildBarcodeAction() {
             const SizedBox(height: 40),
 
             // Quick Actions
-            const Text(
+             Text(
               'Acțiuni Rapide',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2D5A3D),
-              ),
+                color: Theme.of(context).brightness == Brightness.dark 
+     ? const Color(0xFFe8f5e9) 
+     : const Color(0xFF2D5A3D),
+),
             ),
             const SizedBox(height: 16),
             Row(
-              children: [
-                Expanded(
-                  child: _buildQuickAction(
-                    icon: Icons.camera_alt,
-                    title: 'Cameră',
-                    onTap: _pickImageFromCamera,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildQuickAction(
-                    icon: Icons.photo_library,
-                    title: 'Galerie',
-                    onTap: _pickImageFromGallery,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildQuickAction(
-                    icon: Icons.person,
-                    title: 'Profil',
-                    onTap: () => setState(() => _currentIndex = 2),
-                  ),
-                ),
-              ],
-            ),
+  children: [
+    Expanded(child: _buildQuickAction(
+      icon: Icons.camera_alt,
+      title: 'Cameră',
+      onTap: _pickImageFromCamera,
+    )),
+    const SizedBox(width: 12),
+    Expanded(child: _buildQuickAction(
+      icon: Icons.qr_code_scanner,
+      title: 'Barcode',
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const BarcodeScannerScreen(),
+          ),
+        );
+      },
+    )),
+    const SizedBox(width: 12),
+    Expanded(child: _buildQuickAction(
+      icon: Icons.camera_enhance, // Use a camera icon for Smart Camera
+      title: 'Smart Camera',
+      onTap: () {
+        Navigator.pushNamed(context, '/smart-camera'); // <-- Use named route
+      },
+    )),
+    const SizedBox(width: 12),
+    Expanded(child: _buildQuickAction(
+      icon: Icons.photo_library,
+      title: 'Galerie',
+      onTap: _pickImageFromGallery,
+    )),
+    const SizedBox(width: 12),
+    Expanded(child: _buildQuickAction(
+      icon: Icons.person,
+      title: 'Profil',
+      onTap: () => setState(() => _currentIndex = 2),
+    )),
+  ],
+),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickAction({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: const Color(0xFF6B9B76),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D5A3D),
-              ),
-            ),
-          ],
-        ),
+Widget _buildQuickAction({
+  required IconData icon,
+  required String title,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark 
+    ? const Color(0xFF81c784) // Verde viu pe dark
+    : const Color.fromARGB(255, 232, 235, 232), // ÎN LOC DE Colors.white
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-    );
-  }
-
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            size: 32,
+            color: Theme.of(context).primaryColor, // ÎN LOC DE Color(0xFF6B9B76)
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.titleMedium?.color, // ÎN LOC DE Color(0xFF2D5A3D)
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
   Widget _buildHistoryPage() {
     return const Center(
       child: Column(
@@ -508,48 +537,98 @@ Widget _buildBarcodeAction() {
     }
   }
 
-  Future<void> _processImage() async {
-    if (selectedImage == null) return;
-    
+ Future<void> _processImage() async {
+  if (selectedImage == null) return;
+
+  setState(() {
+    isProcessing = true;
+    errorMessage = null;
+  });
+
+  try {
+    debugPrint('🔄 Începe procesarea avansată...');
+
+    // 1. Creează multiple variante ale imaginii
+    final enhancedProcessor = EnhancedImageProcessor();
+    final variants = await enhancedProcessor.createMultipleVariants(selectedImage!);
+
+    // 2. Încearcă OCR pe toate variantele
+    final qualityOcr = QualityAwareOcrService();
+    final ocrResult = await qualityOcr.extractTextMultiAttempt(variants);
+
+    debugPrint('✅ Procesare finalizată, text extras: ${ocrResult.text.substring(0, ocrResult.text.length > 100 ? 100 : ocrResult.text.length)}...');
+
+    // 3. Verifică calitatea rezultatului
+    if (!ocrResult.isReliable) {
+      _showQualityWarning(ocrResult.issues, ocrResult.suggestions);
+    }
+
+    // Continuă cu procesarea normală a alergenilor, folosind textul din ocrResult
+    final extractedText = ocrResult.text;
+    final foundAllergens = _resultHandler.findAllergens(extractedText);
+    final userAllergens = _userService.currentUser?.selectedAllergens ?? [];
+    final relevantAllergens = foundAllergens.where((allergen) => userAllergens.contains(allergen)).toList();
+
+    debugPrint('🚨 Alergeni găsiți: $foundAllergens');
+    debugPrint('⚠️ Alergeni relevanți pentru utilizator: $relevantAllergens');
+
     setState(() {
-      isProcessing = true;
-      errorMessage = null;
+      detectedText = extractedText;
+      detectedAllergens = relevantAllergens;
+      isProcessing = false;
     });
 
-    try {
-      debugPrint('🔄 Începe procesarea imaginii...');
-      
-      final processedImage = await _imageProcessor.processForOCR(selectedImage!);
-      debugPrint('✅ Imagine procesată: ${processedImage.path}');
-      
-      final extractedText = await _ocrService.extractText(processedImage);
-      debugPrint('📝 Text extras: ${extractedText.substring(0, extractedText.length > 100 ? 100 : extractedText.length)}...');
-      
-      // Verifică doar alergenii utilizatorului
-      final foundAllergens = _resultHandler.findAllergens(extractedText);
-      final userAllergens = _userService.currentUser?.selectedAllergens ?? [];
-      final relevantAllergens = foundAllergens.where((allergen) => userAllergens.contains(allergen)).toList();
-      
-      debugPrint('🚨 Alergeni găsiți: $foundAllergens');
-      debugPrint('⚠️ Alergeni relevanți pentru utilizator: $relevantAllergens');
-      
-      setState(() {
-        detectedText = extractedText;
-        detectedAllergens = relevantAllergens; // Afișează doar alergenii relevanți
-        isProcessing = false;
-      });
-      
-      _showResults();
-      
-    } catch (e) {
-      debugPrint('❌ Eroare la procesare: $e');
-      setState(() {
-        isProcessing = false;
-        errorMessage = e.toString();
-      });
-      _showErrorDialog('Eroare la procesarea imaginii: $e');
-    }
+    _showResults();
+  } catch (e) {
+    debugPrint('❌ Eroare la procesare: $e');
+    setState(() {
+      isProcessing = false;
+      errorMessage = e.toString();
+    });
+    _showErrorDialog('Eroare la procesarea imaginii: $e');
   }
+}
+
+// Noua metodă pentru avertismente calitate
+void _showQualityWarning(List<String> issues, List<String> suggestions) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.warning_amber, color: Colors.orange),
+          SizedBox(width: 8),
+          Text('Calitate slabă'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Probleme detectate:', style: TextStyle(fontWeight: FontWeight.bold)),
+          ...issues.map((issue) => Text('• $issue')),
+          const SizedBox(height: 16),
+          const Text('Sugestii:', style: TextStyle(fontWeight: FontWeight.bold)),
+          ...suggestions.map((suggestion) => Text('• $suggestion')),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Înțeleg'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            // Permite utilizatorului să facă o nouă poză
+            _pickImageFromCamera();
+          },
+          child: const Text('Poză nouă'),
+        ),
+      ],
+    ),
+  );
+}
 
   void _showResults() {
     showDialog(
@@ -636,7 +715,7 @@ Widget _buildBarcodeAction() {
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -650,17 +729,17 @@ Widget _buildBarcodeAction() {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+               Text(
                 'Selectează sursa imaginii',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D5A3D),
+                  color: Theme.of(context).textTheme.titleMedium?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -704,7 +783,9 @@ Widget _buildBarcodeAction() {
         width: 120,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF6B9B76),
+          color: Theme.of(context).brightness == Brightness.dark 
+    ? const Color(0xFF1e2b25) 
+    : const Color(0xFF6B9B76),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -712,8 +793,11 @@ Widget _buildBarcodeAction() {
             Icon(
               icon,
               size: 32,
-              color: Colors.white,
-            ),
+              color: Theme.of(context).brightness == Brightness.dark 
+      ? const Color(0xFF81c784) // Verde viu pe dark
+      : const Color(0xFF5a7d5a), // Verde închis pe light
+),
+            
             const SizedBox(height: 8),
             Text(
               label,
@@ -734,34 +818,39 @@ Widget _buildBarcodeAction() {
     _ocrService.dispose();
     super.dispose();
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: _getCurrentPage(),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF6B9B76),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Acasă',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Istoric',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
-    );
-  }
-}
+@override
+Widget build(BuildContext context) {
+ return Scaffold(
+   body: SafeArea(
+     child: Column(
+       children: [
+         const QuickSettingsRow(),
+         Expanded(
+           child: _getCurrentPage(),
+         ),
+       ],
+     ),
+   ),
+   bottomNavigationBar: BottomNavigationBar(
+     currentIndex: _currentIndex,
+     onTap: (index) => setState(() => _currentIndex = index),
+     type: BottomNavigationBarType.fixed,
+     selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
+     items: const [
+       BottomNavigationBarItem(
+         icon: Icon(Icons.home),
+         label: 'Acasă',
+       ),
+       BottomNavigationBarItem(
+         icon: Icon(Icons.history),
+         label: 'Istoric',
+       ),
+       BottomNavigationBarItem(
+         icon: Icon(Icons.person),
+         label: 'Profil',
+       ),
+     ],
+   ),
+ );
+}}

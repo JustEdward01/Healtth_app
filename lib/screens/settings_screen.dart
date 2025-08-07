@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 import '../models/user_profile.dart';
-
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -225,10 +226,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
+        style:  TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF2D5A3D),
+          color: Theme.of(context).textTheme.titleLarge?.color
         ),
       ),
     );
@@ -243,7 +244,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
+
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -285,7 +287,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
+
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -342,7 +345,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
+
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -388,18 +392,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  String _getThemeDisplay(String theme) {
-    switch (theme) {
-      case 'light':
-        return 'Luminos';
-      case 'dark':
-        return 'Întunecat';
-      case 'system':
-        return 'Sistem';
-      default:
-        return 'Sistem';
-    }
-  }
+String _getThemeDisplay(String theme) {
+  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+  return themeProvider.currentThemeName;
+}
 
   void _showLanguageDialog() {
     showDialog(
@@ -435,23 +431,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showThemeDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Selectează tema'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildThemeOption('system', 'Sistem', 'Urmează setările sistemului'),
-              _buildThemeOption('light', 'Luminos', 'Tema luminoasă'),
-              _buildThemeOption('dark', 'Întunecat', 'Tema întunecată'),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return AlertDialog(
+            title: const Text('Selectează tema'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<ThemeMode>(
+                  title: const Text('Sistem'),
+                  subtitle: const Text('Urmează setările sistemului'),
+                  value: ThemeMode.system,
+                  groupValue: themeProvider.themeMode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      themeProvider.setThemeMode(value);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  activeColor: const Color(0xFF6B9B76),
+                ),
+                RadioListTile<ThemeMode>(
+                  title: const Text('Luminos'),
+                  subtitle: const Text('Tema luminoasă'),
+                  value: ThemeMode.light,
+                  groupValue: themeProvider.themeMode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      themeProvider.setThemeMode(value);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  activeColor: const Color(0xFF6B9B76),
+                ),
+                RadioListTile<ThemeMode>(
+                  title: const Text('Întunecat'),
+                  subtitle: const Text('Tema întunecată'),
+                  value: ThemeMode.dark,
+                  groupValue: themeProvider.themeMode,
+                  onChanged: (value) {
+                    if (value != null) {
+                      themeProvider.setThemeMode(value);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  activeColor: const Color(0xFF6B9B76),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
 
   Widget _buildThemeOption(String code, String name, String description) {
     return RadioListTile<String>(

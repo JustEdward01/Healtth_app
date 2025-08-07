@@ -2,9 +2,30 @@ import 'package:flutter/material.dart';
 import 'services/user_service.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+import 'screens/settings_screen.dart';
+import 'providers/allergen_provider.dart';
+// ❌ ELIMINAT: import 'services/hybrid_detection_service.dart';
+import 'allergen/screens/allergen_scanner_screen.dart';
+import '../screens/camera/smart_camera_screen.dart';
+import 'screens/camera/smart_camera_screen.dart';
 
 void main() {
-  runApp(const AllerFreeApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // ❌ ELIMINAT: HybridDetectionService().initialize();
+  // Dictionary-based service nu necesită inițializare specială
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => AllergenProvider()), // ✅ Updated pentru Dictionary
+      ],
+      child: const AllerFreeApp(),
+    ),
+  );
 }
 
 class AllerFreeApp extends StatelessWidget {
@@ -12,15 +33,22 @@ class AllerFreeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'AllerFree',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        scaffoldBackgroundColor: const Color(0xFFE8E8E8),
-        fontFamily: 'Inter',
-      ),
-      home: const SplashScreen(),
-      debugShowCheckedModeBanner: false,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'AllerFree',
+          theme: AppThemes.lightTheme,
+          darkTheme: AppThemes.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const SplashScreen(),
+          debugShowCheckedModeBanner: false,
+          routes: {
+  '/settings': (context) => const SettingsScreen(),
+  '/allergen-scanner': (context) => const AllergenScannerScreen(),
+  '/smart-camera': (context) => const SmartCameraScreen(), // <-- Add this line
+},
+        );
+      },
     );
   }
 }
@@ -42,7 +70,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkOnboardingStatus() async {
-    await Future.delayed(const Duration(seconds: 2)); // Splash delay
+    // ✅ Splash screen mai rapid fără BERT loading
+    await Future.delayed(const Duration(seconds: 1)); // Reduced from 2 seconds
     
     try {
       final hasCompletedOnboarding = await _userService.hasCompletedOnboarding();
@@ -111,11 +140,61 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 48),
+            // ✅ Loading indicator pentru UI consistency
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
+            const SizedBox(height: 16),
+            // 🆕 Mesaj updated pentru Dictionary approach
+            const Text(
+              'Inițializare detectare alergeni...',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// 🆕 Class pentru tema aplicației (dacă nu există deja)
+class AppThemes {
+  static ThemeData get lightTheme {
+    return ThemeData(
+      primarySwatch: Colors.green,
+      primaryColor: const Color(0xFF6B9B76),
+      scaffoldBackgroundColor: Colors.grey[50],
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF6B9B76),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF6B9B76),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      primarySwatch: Colors.green,
+      primaryColor: const Color(0xFF6B9B76),
+      scaffoldBackgroundColor: Colors.grey[900],
+      brightness: Brightness.dark,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF6B9B76),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
     );
   }

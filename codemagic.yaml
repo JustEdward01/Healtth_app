@@ -1,6 +1,6 @@
 # codemagic.yaml
 # Salvează în root-ul proiectului Flutter
-
+#Merge oare in codemagic?
 workflows:
   ios-workflow:
     name: iOS Workflow
@@ -9,30 +9,51 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+      # Adaugă variabile pentru signing (opțional pentru development)
+      vars:
+        BUNDLE_ID: "com.example.healthapp"
     scripts:
       - name: Get Flutter dependencies
         script: |
           flutter packages pub get
+          
+      - name: Pod install
+        script: |
+          cd ios && pod install --repo-update
+          
       - name: Build iOS
         script: |
           flutter build ios --release --no-codesign
-      - name: Create IPA
+          
+      # Opțiunea 1: Pentru development/testing (fără signing)
+      - name: Create unsigned IPA
         script: |
-          xcodebuild -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -destination generic/platform=iOS \
-            -archivePath build/ios/Runner.xcarchive \
-            archive
-          xcodebuild -exportArchive \
-            -archivePath build/ios/Runner.xcarchive \
-            -exportPath build/ios/ipa \
-            -exportOptionsPlist ios/ExportOptions.plist
+          mkdir -p build/ios/ipa
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../ipa/app-unsigned.ipa Payload/
+          
+      # Opțiunea 2: Pentru signed IPA (comentează dacă folosești opțiunea 1)
+      # - name: Create signed IPA
+      #   script: |
+      #     xcodebuild -workspace ios/Runner.xcworkspace \
+      #       -scheme Runner \
+      #       -configuration Release \
+      #       -destination generic/platform=iOS \
+      #       -archivePath build/ios/Runner.xcarchive \
+      #       archive
+      #     xcodebuild -exportArchive \
+      #       -archivePath build/ios/Runner.xcarchive \
+      #       -exportPath build/ios/ipa \
+      #       -exportOptionsPlist ios/ExportOptions.plist
+          
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/iphoneos/*.app
       - /tmp/xcodebuild_logs/*.log
       - flutter_drive.log
+      
     publishing:
       # Email notification
       email:
