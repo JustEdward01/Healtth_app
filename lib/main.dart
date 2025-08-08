@@ -1,4 +1,5 @@
 // lib/main.dart - FIXED VERSION
+// lib/main.dart - FIXED IMPORTS
 import 'package:flutter/material.dart';
 import 'services/user_service.dart';
 import 'screens/onboarding_screen.dart';
@@ -8,8 +9,6 @@ import 'providers/theme_provider.dart';
 import 'screens/settings_screen.dart';
 import 'providers/allergen_provider.dart';
 import 'allergen/screens/allergen_scanner_screen.dart';
-import 'screens/camera/smart_camera_screen.dart'; // ✅ FIXED: doar acest import
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -40,8 +39,7 @@ class AllerFreeApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           routes: {
             '/settings': (context) => const SettingsScreen(),
-            '/allergen-scanner': (context) => const AllergenScannerScreen(),
-            '/smart-camera': (context) => const SmartCameraScreen(),
+            '/allergen-scanner': (context) => const AllergenScannerScreen()
           },
         );
       },

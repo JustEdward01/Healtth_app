@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 import '../modules/result_handler.dart';
 import 'main_screen.dart'; 
-
+import '../modules/eu_result_handler.dart';
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 

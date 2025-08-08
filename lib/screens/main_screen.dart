@@ -4,18 +4,17 @@ import 'dart:io';
 import '../services/user_service.dart';
 import '../modules/image_selector.dart';
 import '../modules/ocr_service.dart';
-import '../modules/result_handler.dart';
+import '../modules/eu_result_handler.dart';
 import 'profile_screen.dart';
 import 'barcode_scanner_screen.dart';
 import '../widgets/quick_settings_widgets.dart';
 import '../services/enhanced_image_processor.dart';
 import '../services/quality_aware_ocr_service.dart';
-import '../modules/ocr_tolerant_result_handler.dart';
-import '../widgets/visual_allergen_overlay.dart';
 import '../controllers/scan_history_controller.dart';
 import '../services/local_storage_service.dart';
 import '../models/scan_history_entry.dart';
 import '../screens/scan_history_screen.dart';
+import '../modules/eu_result_handler.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -26,11 +25,11 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   
-  // Services
+  // Services - Updated to use EU system
   final UserService _userService = UserService();
   final ImageSelector _imageSelector = ImageSelector();
   final OcrService _ocrService = OcrService();
-  final ResultHandler _resultHandler = ResultHandler();
+  final EUResultHandler _resultHandler = EUResultHandler();
   final ScanHistoryController _historyController = ScanHistoryController(LocalStorageService());
 
   // State pentru scanning
@@ -44,6 +43,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _loadUser();
+    _initializeEUSystem();
   }
 
   Future<void> _loadUser() async {
@@ -52,6 +52,16 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {});
     } catch (e) {
       debugPrint('Eroare la încărcarea utilizatorului: $e');
+    }
+  }
+
+  /// Initialize the EU allergen detection system
+  Future<void> _initializeEUSystem() async {
+    try {
+      await _resultHandler.initialize();
+      debugPrint('✅ EU Allergen System initialized');
+    } catch (e) {
+      debugPrint('❌ Error initializing EU system: $e');
     }
   }
 
@@ -143,7 +153,7 @@ class _MainScreenState extends State<MainScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -195,7 +205,7 @@ class _MainScreenState extends State<MainScreen> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(40),
                           ),
                           child: const Icon(
@@ -318,7 +328,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ),
                             ),
-                          // ✨ BUTOANE NOOII - Vezi pe Imagine + Lista
+                          // Butoane pentru rezultate
                           if (!isProcessing && selectedImage != null)
                             Positioned(
                               bottom: 16,
@@ -326,13 +336,13 @@ class _MainScreenState extends State<MainScreen> {
                               right: 16,
                               child: Row(
                                 children: [
-                                  // Buton pentru overlay vizual - PRINCIPAL
+                                  // Buton pentru rezultate principale
                                   Expanded(
                                     flex: 2,
                                     child: ElevatedButton.icon(
-                                      onPressed: _showVisualAllergenOverlay,
+                                      onPressed: _showResults,
                                       icon: const Icon(Icons.visibility, size: 18),
-                                      label: const Text('Vezi pe Imagine'),
+                                      label: const Text('Vezi Rezultate'),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: detectedAllergens.isNotEmpty 
                                             ? Colors.red 
@@ -346,12 +356,12 @@ class _MainScreenState extends State<MainScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  // Buton pentru rezultate tradiționale - SECUNDAR
+                                  // Buton pentru detalii
                                   Expanded(
                                     child: OutlinedButton.icon(
-                                      onPressed: _showResults,
+                                      onPressed: _showDetailedResults,
                                       icon: const Icon(Icons.list, size: 18),
-                                      label: const Text('Lista'),
+                                      label: const Text('Detalii'),
                                       style: OutlinedButton.styleFrom(
                                         side: BorderSide(
                                           color: detectedAllergens.isNotEmpty 
@@ -459,7 +469,7 @@ class _MainScreenState extends State<MainScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -488,11 +498,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildHistoryPage() {
-  return ChangeNotifierProvider.value(
-    value: _historyController,
-    child: const HistoryScreen(),
-  );
-}
+    return ChangeNotifierProvider.value(
+      value: _historyController,
+      child: const HistoryScreen(),
+    );
+  }
 
   // Toate metodele pentru procesarea imaginilor
   Future<void> _pickImageFromGallery() async {
@@ -544,7 +554,7 @@ class _MainScreenState extends State<MainScreen> {
     });
 
     try {
-      debugPrint('🔄 Începe procesarea avansată...');
+      debugPrint('🔄 Începe procesarea cu sistemul EU...');
 
       final enhancedProcessor = EnhancedImageProcessor();
       final variants = await enhancedProcessor.createMultipleVariants(selectedImage!);
@@ -557,15 +567,12 @@ class _MainScreenState extends State<MainScreen> {
 
       final extractedText = ocrResult.text;
       
-      final ocrTolerantDetector = OCRTolerantResultHandler();
-      final foundAllergens = ocrTolerantDetector.findAllergensWithOCRTolerance(extractedText);
-      
-      final userAllergens = _userService.currentUser?.selectedAllergens ?? [];
-      final relevantAllergens = foundAllergens.where((allergen) => userAllergens.contains(allergen)).toList();
+      // Use EU system for allergen detection
+      final foundAllergens = await _resultHandler.findAllergensSimple(extractedText);
 
       setState(() {
         detectedText = extractedText;
-        detectedAllergens = relevantAllergens;
+        detectedAllergens = foundAllergens;
         isProcessing = false;
       });
 
@@ -577,11 +584,7 @@ class _MainScreenState extends State<MainScreen> {
       );
       await _historyController.addEntry(entry);
 
-      if (relevantAllergens.isNotEmpty) {
-        await _showVisualAllergenOverlay();
-      } else {
-        _showResults();
-      }
+      _showResults();
       
     } catch (e) {
       debugPrint('❌ Eroare la procesare: $e');
@@ -590,39 +593,6 @@ class _MainScreenState extends State<MainScreen> {
         errorMessage = e.toString();
       });
       _showErrorDialog('Eroare la procesarea imaginii: $e');
-    }
-  }
-
-
-  // ✨ NOUA METODĂ pentru overlay-ul vizual
-  Future<void> _showVisualAllergenOverlay() async {
-    if (selectedImage == null) return;
-
-    try {
-      // Detectează pozițiile alergenilor pe imagine
-      final positionedAllergens = await AllergenPositionDetector.detectAllergenPositions(
-        imageFile: selectedImage!,
-        detectedAllergens: detectedAllergens,
-      );
-
-      if (mounted) {
-        // Afișează overlay-ul vizual full-screen
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => VisualAllergenOverlay(
-              imageFile: selectedImage!,
-              allergenMatches: positionedAllergens,
-              onClose: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Eroare la afișarea overlay-ului vizual: $e');
-      // Fallback la afișarea normală
-      _showResults();
     }
   }
 
@@ -730,18 +700,191 @@ class _MainScreenState extends State<MainScreen> {
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  _showVisualAllergenOverlay(); // Deschide overlay-ul vizual
+                  _showDetailedResults();
                 },
-                icon: const Icon(Icons.visibility, size: 18),
-                label: const Text('Vezi pe Imagine'),
+                icon: const Icon(Icons.info, size: 18),
+                label: const Text('Detalii EU'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                 ),
               ),
           ],
         );
       },
+    );
+  }
+
+  /// Show detailed EU-compliant results
+  void _showDetailedResults() async {
+    if (detectedText == null) return;
+
+    try {
+      final safetyResult = await _resultHandler.analyzeSafety(detectedText!);
+      
+      if (!mounted) return;
+      
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                Icon(
+                  safetyResult.getIndicatorColor() == Colors.green ? Icons.shield : Icons.warning,
+                  color: safetyResult.getIndicatorColor(),
+                ),
+                const SizedBox(width: 8),
+                const Text('Analiză EU Completă'),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Status general
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: safetyResult.getIndicatorColor().withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: safetyResult.getIndicatorColor()),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          safetyResult.getMessage('ro'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: safetyResult.getIndicatorColor(),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          'Nivel risc: ${safetyResult.riskLevel.displayName}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: safetyResult.getIndicatorColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Alergeni relevanți pentru utilizator
+                  if (safetyResult.userRelevantAllergens.isNotEmpty) ...[
+                    const Text('⚠️ Alergeni pentru tine:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                    const SizedBox(height: 8),
+                    ...safetyResult.userRelevantAllergens.map((match) => 
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.red.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Text('EU ${match.euCode}:', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(match.allergenData.nameRO)),
+                            Text('${(match.confidence * 100).toInt()}%', style: const TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Toți alergenii detectați
+                  if (safetyResult.allDetectedAllergens.isNotEmpty) ...[
+                    const Text('📋 Toți alergenii detectați:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    ...safetyResult.allDetectedAllergens.map((match) => 
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 2),
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            Text('EU ${match.euCode}:', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 4),
+                            Expanded(child: Text(match.allergenData.nameRO, style: const TextStyle(fontSize: 11))),
+                            Text('${(match.confidence * 100).toInt()}%', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Închide'),
+              ),
+              if (safetyResult.userRelevantAllergens.isNotEmpty)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _showAllergenAdvice(safetyResult.userRelevantAllergens);
+                  },
+                  icon: const Icon(Icons.info_outline, size: 18),
+                  label: const Text('Sfaturi'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      debugPrint('Error showing detailed results: $e');
+      _showErrorDialog('Eroare la afișarea rezultatelor detaliate: $e');
+    }
+  }
+
+  /// Show advice for detected allergens
+  void _showAllergenAdvice(List<dynamic> allergenMatches) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ Sfaturi importante'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Acest produs conține alergeni pentru care ești sensibil:'),
+            const SizedBox(height: 8),
+            ...allergenMatches.map((match) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Text('• ${match.allergenData.nameRO.toUpperCase()} (EU ${match.euCode})', 
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+            )),
+            const SizedBox(height: 12),
+            const Text(
+              'Recomandări:\n• Evită consumul acestui produs\n• Verifică întotdeauna eticheta pentru codul EU\n• Consultă medicul pentru informații suplimentare\n• Păstrează lista alergenilor EU la îndemână',
+              style: TextStyle(fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Am înțeles'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -863,22 +1006,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // ✨ FAB pentru overlay rapid
-  FloatingActionButton? get _buildOverlayFAB {
-    if (selectedImage != null && detectedAllergens.isNotEmpty) {
-      return FloatingActionButton(
-        onPressed: _showVisualAllergenOverlay,
-        backgroundColor: Colors.red,
-        heroTag: "visual_overlay_fab",
-        child: const Icon(
-          Icons.visibility,
-          color: Colors.white,
-        ),
-      );
-    }
-    return null;
-  }
-
   @override
   void dispose() {
     _ocrService.dispose();
@@ -898,7 +1025,6 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
-      floatingActionButton: _buildOverlayFAB, // ✨ FAB pentru overlay
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),

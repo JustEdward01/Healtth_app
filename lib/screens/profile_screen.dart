@@ -5,7 +5,7 @@ import '../modules/result_handler.dart';
 import '../models/user_profile.dart';
 import '../modules/image_selector.dart';
 import 'settings_screen.dart';
-
+import '../modules/eu_result_handler.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
