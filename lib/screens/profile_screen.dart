@@ -5,7 +5,6 @@ import '../modules/result_handler.dart';
 import '../models/user_profile.dart';
 import '../modules/image_selector.dart';
 import 'settings_screen.dart';
-import '../modules/eu_result_handler.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -614,8 +613,39 @@ class _AllergenEditDialogState extends State<_AllergenEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final availableAllergens = _resultHandler.availableAllergens;
+    final availableAllergens = [
+  'cereals_gluten',   // în loc de ce era înainte
+  'crustaceans',
+  'eggs', 
+  'fish',
+  'peanuts',
+  'soybeans',
+  'milk',
+  'tree_nuts',
+  'celery',
+  'mustard',          // în loc de 'mustar'
+  'sesame',
+  'sulphites',
+  'lupin',
+  'molluscs'
+];
 
+final allergenDisplayNames = {
+  'cereals_gluten': 'Cereale cu gluten',
+  'crustaceans': 'Crustacee',
+  'eggs': 'Ouă',
+  'fish': 'Pește', 
+  'peanuts': 'Arahide',
+  'soybeans': 'Soia',
+  'milk': 'Lapte',
+  'tree_nuts': 'Nuci',
+  'celery': 'Țelină',
+  'mustard': 'Muștar',        // afișează frumos
+  'sesame': 'Susan',
+  'sulphites': 'Sulfiți',
+  'lupin': 'Lupin',
+  'molluscs': 'Moluște'
+};
     return AlertDialog(
       title: const Text('Editează Alergenii'),
       content: SizedBox(

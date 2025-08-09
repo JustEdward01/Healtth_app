@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 import '../modules/result_handler.dart';
 import 'main_screen.dart'; 
-import '../modules/eu_result_handler.dart';
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -408,7 +407,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildAllergensPage() {
-    final availableAllergens = _resultHandler.availableAllergens;
+    final availableAllergens = [
+  'cereals_gluten',   // în loc de ce era înainte
+  'crustaceans',
+  'eggs', 
+  'fish',
+  'peanuts',
+  'soybeans',
+  'milk',
+  'tree_nuts',
+  'celery',
+  'mustard',          // în loc de 'mustar'
+  'sesame',
+  'sulphites',
+  'lupin',
+  'molluscs'
+];
+
+final allergenDisplayNames = {
+  'cereals_gluten': 'Cereale cu gluten',
+  'crustaceans': 'Crustacee',
+  'eggs': 'Ouă',
+  'fish': 'Pește', 
+  'peanuts': 'Arahide',
+  'soybeans': 'Soia',
+  'milk': 'Lapte',
+  'tree_nuts': 'Nuci',
+  'celery': 'Țelină',
+  'mustard': 'Muștar',        // afișează frumos
+  'sesame': 'Susan',
+  'sulphites': 'Sulfiți',
+  'lupin': 'Lupin',
+  'molluscs': 'Moluște'
+};
     
     return Padding(
       padding: const EdgeInsets.all(24),

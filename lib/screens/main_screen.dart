@@ -14,7 +14,6 @@ import '../controllers/scan_history_controller.dart';
 import '../services/local_storage_service.dart';
 import '../models/scan_history_entry.dart';
 import '../screens/scan_history_screen.dart';
-import '../modules/eu_result_handler.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -647,7 +646,16 @@ class _MainScreenState extends State<MainScreen> {
                 color: detectedAllergens.isEmpty ? Colors.green : Colors.red,
               ),
               const SizedBox(width: 8),
-              Text(detectedAllergens.isEmpty ? 'Sigur pentru tine!' : 'Atenție!'),
+              Text(
+  detectedAllergens.isEmpty 
+    ? '🛡️ Produs Sigur!' 
+    : '⚠️ ALERGEN DETECTAT!',
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: detectedAllergens.isEmpty ? Colors.green : Colors.red,
+  ),
+),
             ],
           ),
           content: Column(
@@ -655,7 +663,32 @@ class _MainScreenState extends State<MainScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (detectedAllergens.isEmpty)
-                const Text('Nu au fost detectați alergenii din profilul tău în acest produs.')
+                Container(
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.green.shade50,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: Colors.green.shade300),
+  ),
+  child: Column(
+    children: [
+      const Icon(Icons.check_circle, color: Colors.green, size: 32),
+      const SizedBox(height: 8),
+      Text(
+        'Produs Sigur Pentru Tine!',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.green.shade700,
+        ),
+      ),
+      Text(
+        'Nu conține alergenii din profilul tău',
+        style: TextStyle(color: Colors.green.shade600),
+      ),
+    ],
+  ),
+)
               else ...[
                 const Text('Alergeni detectați din profilul tău:', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -666,7 +699,28 @@ class _MainScreenState extends State<MainScreen> {
                       children: [
                         const Icon(Icons.warning, color: Colors.red, size: 16),
                         const SizedBox(width: 8),
-                        Text(allergen.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Container(
+  margin: const EdgeInsets.symmetric(vertical: 4),
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: Colors.red.shade50,
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(color: Colors.red.shade300),
+  ),
+  child: Row(
+    children: [
+      const Icon(Icons.warning, color: Colors.red, size: 20),
+      const SizedBox(width: 8),
+      Text(
+        allergen.toUpperCase(), 
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.red.shade700,
+        ),
+      ),
+    ],
+  ),
+),
                       ],
                     ),
                   ),
@@ -675,19 +729,37 @@ class _MainScreenState extends State<MainScreen> {
               if (detectedText?.isNotEmpty == true) ...[
                 const SizedBox(height: 16),
                 ExpansionTile(
-                  title: const Text('Text detectat (Debug)'),
-                  children: [
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 150),
-                      child: SingleChildScrollView(
-                        child: Text(
-                          detectedText!,
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+  title: const Row(
+    children: [
+      Icon(Icons.text_fields, size: 16, color: Colors.blue),
+      SizedBox(width: 8),
+      Text('Text Detectat OCR', style: TextStyle(fontSize: 14)),
+    ],
+  ),
+  children: [
+    Container(
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      constraints: const BoxConstraints(maxHeight: 150),
+      child: SingleChildScrollView(
+        child: Text(
+          detectedText!,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade700,
+            fontFamily: 'monospace',
+            height: 1.3,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
               ],
             ],
           ),
